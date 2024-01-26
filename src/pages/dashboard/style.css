@@ -1,0 +1,19 @@
+.acc-list, .rounded-full{
+    color: #ffffff !important;
+}
+
+.yebo-pay-logo{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 14px;
+    width: 20%;
+}
+
+.modal-estatements-logo{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    width: 80px;
+}

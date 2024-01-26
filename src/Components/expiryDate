@@ -1,0 +1,33 @@
+// BankCardExpiryInput.js
+import React, { useState } from 'react';
+import { TextField } from 'material-tailwind';
+
+const BankCardExpiryInput = () => {
+  const [expiryDate, setExpiryDate] = useState('');
+
+  const handleExpiryChange = (e) => {
+    const input = e.target.value;
+
+    // Validate the input to allow only numeric characters
+    const sanitizedInput = input.replace(/\D/g, '');
+
+    // Format the input as MM/YY
+    const formattedInput = sanitizedInput
+      .slice(0, 4)
+      .replace(/(\d{2})(\d{2})/, '$1/$2');
+
+    setExpiryDate(formattedInput);
+  };
+
+  return (
+    <TextField
+      type="text"
+      label="Card Expiry"
+      placeholder="MM/YY"
+      value={expiryDate}
+      onChange={handleExpiryChange}
+    />
+  );
+};
+
+export default BankCardExpiryInput;
