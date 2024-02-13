@@ -58,3 +58,16 @@ export const GET_METER_READINGS = gql`
     }
   }
 `;
+
+
+export const GET_USER_PAYMENT_ARRANGEMENTS = gql`
+  query getUserPaymentArrangements($accountNumber: String!) {
+    getUserPaymentArrangements(accountNumber: $accountNumber) {
+      id
+      accountNumber
+      paymentDate
+      amount
+      createdAt
+    }
+  }
+`;

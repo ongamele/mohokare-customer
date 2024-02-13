@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Card,
   Input,
@@ -37,25 +37,25 @@ import {
 
 
 import './style.css';
-import {
-  projectsTableData,
-  ordersOverviewData,
-} from "@/data";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { CREATE_PAYMENT_ARRANGEMENT } from "../../Graphql/Mutations";
 
 import yeboPayLogo from "../../images/yeboPay-logo.png";
 import mohokareLogo from "../../images/mohokareLogo.jpg";
 import { GET_STATEMENT } from "../../Graphql/Queries";
+import { GET_USER_PAYMENT_ARRANGEMENTS } from "../../Graphql/Queries";
+import { AuthContext } from "../../context-auth/auth";
 
 export function Account() {
+  const { user } = useContext(AuthContext);
   const [open, setOpen] = React.useState(false);
   const [openArrangement, setOpenArrangement] = React.useState(false);
   const [openEFTModal, setOpenEFTModal] = React.useState(false);
-  const [date, setDate] = useState()
-  const [accountNumber, setAccountNumber] = React.useState('0100002005')
+  const [paymentDate, setPaymentDate] = useState()
+  const [amount, setAmount] = useState();
  
   const handleOpen = () => setOpen(!open);
   const handleArrangementOpen = () => setOpenArrangement(!openArrangement);
@@ -66,8 +66,30 @@ export function Account() {
     data: statementData,
     refetch: refetchStatementData,
   } = useQuery(GET_STATEMENT, {
-    variables: { accountNumber }
+    variables: { accountNumber: user.accountNumber }
   });
+
+
+  const {
+    loading: paymentArrangementsDataLoading,
+    data: paymentArrangementsData,
+    refetch: refetchPaymentArrangementsData,
+  } = useQuery(GET_USER_PAYMENT_ARRANGEMENTS, {
+    variables: { accountNumber: user.accountNumber }
+  });
+
+  {paymentArrangementsData ? console.log(JSON.stringify(paymentArrangementsData)) : console.log('No data in aarrangements')}
+
+const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] = useMutation(CREATE_PAYMENT_ARRANGEMENT, {
+  update: (_, result) => {
+    alert("Payment Arrangement submitted Successfully!");
+  },
+  onError: (err) => {
+    Alert("Error! " + err);
+  },
+});
+
+
 
 
   let outstandingAmount = '';
@@ -79,6 +101,32 @@ export function Account() {
   }
 
 
+
+  const handlePaymentArrangementSubmit = async () => {
+   
+    let perc = 30 * Number(outstandingAmount) /100;
+    
+    if (user.accountNumber && paymentDate && amount) {
+
+      if(amount < perc)
+    {
+      alert('You are allowed to make payment arrangement of at least 30% of the outstanding amount')
+    }else{
+      handleArrangementOpen();
+      
+      createPaymentArrangement({
+        variables: {
+          accountNumber: user.accountNumber,
+          paymentDate, 
+          amount: Number(amount),
+        },
+      });
+    }
+     
+    }else{
+      Alert('Payment date & amount are required!')
+    }
+  };
   const data = [
     {
       label: "Card",
@@ -114,7 +162,7 @@ export function Account() {
             </Typography>
             <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium" style={{marginTop: 10}}>
-              Enter amount to pay
+              Enter amount to pay 
             </Typography>
             <Input
               size="sm"
@@ -258,21 +306,23 @@ export function Account() {
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
+              onChange={(e) => setAmount(e.target.value)}
             />
             <br />
+            
       <Popover placement="bottom">
         <PopoverHandler>
           <Input
             label="Select a Date"
             type="date"
-            onChange={() => null}
+            onChange={(e) => setPaymentDate(e.target.value)}
           />
         </PopoverHandler>
         <PopoverContent>
           <DayPicker
             mode="single"
-            selected={date}
-            onSelect={setDate}
+            selected={paymentDate}
+            onSelect={setPaymentDate}
             showOutsideDays
             className="border-0"
             classNames={{
@@ -309,6 +359,7 @@ export function Account() {
           />
         </PopoverContent>
       </Popover>
+     
         </DialogBody>
         <DialogFooter>
           <Button
@@ -322,7 +373,7 @@ export function Account() {
           <Button
             variant="gradient"
             color="green"
-            onClick={handleArrangementOpen}
+            onClick={handlePaymentArrangementSubmit}
           >
             <span>Confirm</span>
           </Button>
@@ -440,21 +491,7 @@ export function Account() {
  Outstanding
               </Typography>
             </div>
-            <Menu placement="left-start">
-              <MenuHandler>
-                <IconButton size="sm" variant="text" color="blue-gray">
-                  <EllipsisVerticalIcon
-                    strokeWidth={3}
-                    fill="currenColor"
-                    className="h-6 w-6"
-                  />
-                </IconButton>
-              </MenuHandler>
-              <MenuList>
-                <MenuItem>Pay Now</MenuItem>
-                <MenuItem>Payment Arrangement</MenuItem>
-              </MenuList>
-            </Menu>
+            
           </CardHeader>
           <CardBody className=" px-0 pt-0 pb-2">
             <table className="w-full min-w-[640px] table-auto">
@@ -478,6 +515,7 @@ export function Account() {
                 </tr>
               </thead>
               <tbody>
+                
                       <tr>
                         <td className="py-3 px-5">
                           <div className="flex items-center gap-4">
@@ -523,7 +561,7 @@ export function Account() {
                               style={{color: "#38D8A2", cursor: "pointer"}}
                               onClick={handleOpen}
                             >
-                              pay
+                              Pay
                             </Typography>
                            
                         </td>
@@ -556,8 +594,99 @@ export function Account() {
             </table>
           </CardBody>
         </Card>
+
+
+
+
+
  
 
+  </section>
+  <section className="m-12 flex gap-4">
+  <Card>
+          <CardHeader
+            floated={false}
+            shadow={false}
+            color="transparent"
+            className="m-0 flex items-center justify-between p-6"
+          >
+            <div>
+              <Typography variant="h6" color="blue-gray" className="mb-1">
+                My Payment Arrangements
+              </Typography>
+          
+            </div>
+           
+          </CardHeader>
+          <CardBody className=" px-0 pt-0 pb-2">
+            <table className="w-full min-w-[640px] table-auto">
+              <thead>
+                <tr>
+                  {[ "account number", "Arrangement Date", "Amount", ""].map(
+                    (el) => (
+                      <th
+                        key={el}
+                        className="border-b border-blue-gray-50 py-3 px-6 text-left"
+                      >
+                        <Typography
+                          variant="small"
+                          className="text-[11px] font-medium uppercase text-blue-gray-400"
+                        >
+                          {el}
+                        </Typography>
+                      </th>
+                    )
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+              {paymentArrangementsData && paymentArrangementsData.getUserPaymentArrangements.map((arrangement, index) => (
+  <tr key={index}>
+    <td className="py-3 px-5">
+      <div className="flex items-center gap-4">
+        <Typography
+          variant="small"
+          color="blue-gray"
+          className="font-bold"
+        >
+          {arrangement.accountNumber}
+        </Typography>
+      </div>
+    </td>
+    <td className="py-3 px-5">
+      <Typography
+        variant="small"
+        color="blue-gray"
+        className="font-bold"
+      >
+        {arrangement.paymentDate}
+      </Typography>
+    </td>
+    <td className="py-3 px-5">
+      <Typography
+        variant="small"
+        className="text-xs font-medium text-blue-gray-600"
+      >
+        R{arrangement.amount}
+      </Typography>
+    </td>
+    <td className="py-3 px-5">
+      <Typography
+        variant="small"
+        className="mb-1 block text-xs font-medium text-blue-gray-600"
+        style={{color: "#38D8A2", cursor: "pointer"}}
+        onClick={() => handleOpen(arrangement)}
+      >
+        pay now
+      </Typography>
+    </td>
+  </tr>
+))}
+
+              </tbody>
+            </table>
+          </CardBody>
+        </Card>
   </section>
   </>
   );

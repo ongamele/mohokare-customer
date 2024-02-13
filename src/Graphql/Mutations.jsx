@@ -85,3 +85,9 @@ export const UPDATE_USER_DETAILS = gql`
     updateUserDetails(accountNumber: $accountNumber, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email)
   }
 `;
+
+export const CREATE_PAYMENT_ARRANGEMENT = gql`
+  mutation createPaymentArrangement($accountNumber: String!, $paymentDate: String!, $amount: Int!) {
+    createPaymentArrangement(accountNumber: $accountNumber, paymentDate: $paymentDate, amount: $amount)
+  }
+`;
