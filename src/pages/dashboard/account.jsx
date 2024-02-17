@@ -82,7 +82,8 @@ export function Account() {
 
 const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] = useMutation(CREATE_PAYMENT_ARRANGEMENT, {
   update: (_, result) => {
-    alert("Payment Arrangement submitted Successfully!");
+   
+    alert(result.data.createPaymentArrangement);
   },
   onError: (err) => {
     Alert("Error! " + err);
@@ -110,7 +111,7 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
 
       if(amount < perc)
     {
-      alert('You are allowed to make payment arrangement of at least 30% of the outstanding amount')
+      alert('You are only allowed to make payment arrangement of at least 30% of the outstanding amount')
     }else{
       handleArrangementOpen();
       
@@ -134,6 +135,16 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
       icon: CreditCardIcon
     },
   ];
+
+  const today = new Date().toISOString().split('T')[0];
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
   return (
     <>
       <Dialog size={"xs"} open={open} handler={handleOpen}>
@@ -315,12 +326,14 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
           <Input
             label="Select a Date"
             type="date"
+            min={today}
             onChange={(e) => setPaymentDate(e.target.value)}
           />
         </PopoverHandler>
         <PopoverContent>
           <DayPicker
             mode="single"
+            disabled={(date) => date < today}
             selected={paymentDate}
             onSelect={setPaymentDate}
             showOutsideDays
@@ -466,7 +479,7 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
           </Button>
         </DialogFooter>
       </Dialog>
-    <section className="m-12 flex gap-4">
+   
       
    
 
@@ -596,13 +609,9 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
         </Card>
 
 
+<br/><br/>
 
 
-
- 
-
-  </section>
-  <section className="m-12 flex gap-4">
   <Card>
           <CardHeader
             floated={false}
@@ -659,7 +668,8 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
         color="blue-gray"
         className="font-bold"
       >
-        {arrangement.paymentDate}
+        
+        {formatDate(arrangement.paymentDate)}
       </Typography>
     </td>
     <td className="py-3 px-5">
@@ -677,7 +687,7 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
         style={{color: "#38D8A2", cursor: "pointer"}}
         onClick={() => handleOpen(arrangement)}
       >
-        pay now
+        Pay Now
       </Typography>
     </td>
   </tr>
@@ -687,7 +697,6 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
             </table>
           </CardBody>
         </Card>
-  </section>
   </>
   );
 }

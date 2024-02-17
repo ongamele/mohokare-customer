@@ -156,7 +156,7 @@ export function Home() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Town
+              Address
             </Typography>
             <Typography
               variant="small"

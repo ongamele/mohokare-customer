@@ -1,53 +1,19 @@
 import React, { useState } from "react";
 import {
   Card,
-  Input,
-  Checkbox,
-  Button,
   Typography,
   CardHeader,
   CardBody,
-  Menu,
-  IconButton,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Tabs,
-  TabsHeader,
-  TabsBody,
-  Tab,
-  TabPanel,
-  Popover,
-  PopoverHandler,
-  PopoverContent,
+
 } from "@material-tailwind/react";
-import {
-  CreditCardIcon,
-  BanknotesIcon,
-  CheckCircleIcon 
-} from "@heroicons/react/24/solid";
-import {
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
 
-
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import './style.css';
-import {
-  projectsTableData,
-  ordersOverviewData,
-} from "@/data";
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import { format } from "date-fns";
-import { DayPicker } from "react-day-picker";
-import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
 
+import { useQuery } from "@apollo/react-hooks";
+import imgSrc from "../../images/municipalityLogo.jpg";
 import yeboPayLogo from "../../images/yeboPay-logo.png";
-import logoSmall from "../../images/logoSmall.png";
 import { GET_STATEMENT } from "../../Graphql/Queries";
 
 export function PaymentHistory() {
@@ -78,14 +44,49 @@ export function PaymentHistory() {
     outstandingAmount = 0;
   }
 
+  const generatePDF = async () => {
 
-  const data = [
-    {
-      label: "Card",
-      value: "card",
-      icon: CreditCardIcon
-    },
-  ];
+    let left = 20;
+    let top = 6;
+    const imgWidth = 40;
+    const imgHeight = 20;
+  
+    const doc = new jsPDF();
+    var img = new Image();
+    var yeboImg = new Image();
+    img.src = imgSrc;
+    yeboImg.src = yeboPayLogo;
+    doc.addImage(img, "png", left, top, imgWidth, imgHeight);
+
+
+  
+
+  
+    const headers = ['Name', 'Account Number', 'Last Payment Date', 'Amount'];
+    const data = [[statementData?.getStatement?.consumerName, statementData?.getStatement?.accountNumber, statementData?.getStatement.lastPaymentDate, statementData?.getStatement?.lastPaymentAmount]];
+  
+    doc.autoTable({
+      head: [headers],
+      body: data,
+      startY: 40,
+      theme: 'grid',
+      styles: {
+        fontSize: 7,
+        cellPadding: 1,
+        valign: 'middle',
+        lineColor: [0, 0, 0]
+      },
+      headStyles: { fillColor: [185, 185, 185], textColor: '#000000' },
+      columnStyles: {
+        // Set the height of all columns to 20 (for example)
+        '*': { cellHeight: 8 }
+      }
+    });
+  
+  
+  
+    doc.save('payment-history.pdf'); 
+  };
   return (
     <>
  
@@ -161,6 +162,17 @@ export function PaymentHistory() {
                               className="mb-1 block text-xs font-medium text-blue-gray-600"
                             >
                              R{statementData?.getStatement?.lastPaymentAmount}
+                            </Typography>
+                           
+                        </td>
+                        <td className="py-3 px-5">
+                            <Typography
+                              variant="small"
+                              className="mb-1 block text-xs font-medium text-blue-gray-600"
+                              onClick={() => generatePDF()}
+                              style={{cursor: 'pointer', color: "#3855E5"}}
+                            >
+                             Download
                             </Typography>
                            
                         </td>
