@@ -32,7 +32,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
       
             <img
           src={logoSmall}
-          className="h-full w-full object-cover rounded-3xl" style={{width: 80, margin: 'auto'}}
+          className="h-full w-full object-cover rounded-3xl" style={{width: 128, margin: 'auto'}}
         />
         </Link>
         <IconButton
