@@ -42,6 +42,7 @@ import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { CREATE_PAYMENT_ARRANGEMENT } from "../../Graphql/Mutations";
+import { PROCESS_PAYMENT } from "../../Graphql/Mutations";
 
 import yeboPayLogo from "../../images/yeboPay-logo.png";
 import mohokareLogo from "../../images/mohokareLogo.jpg";
@@ -56,6 +57,13 @@ export function Account() {
   const [openEFTModal, setOpenEFTModal] = React.useState(false);
   const [paymentDate, setPaymentDate] = useState()
   const [amount, setAmount] = useState();
+  const [expiryMonth, setExpiryMonth ] = React.useState()
+  const [expiryYear, setExpiryYear ] = React.useState()
+  const [name, setName] = React.useState()
+  const [cvc, setCvc] = React.useState()
+  const [cardNumber, setCardNumber] = React.useState()
+  const [accountNumber, setAccountNumber] = React.useState()
+
  
   const handleOpen = () => setOpen(!open);
   const handleArrangementOpen = () => setOpenArrangement(!openArrangement);
@@ -83,10 +91,20 @@ export function Account() {
 const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] = useMutation(CREATE_PAYMENT_ARRANGEMENT, {
   update: (_, result) => {
    
-    alert(result.data.createPaymentArrangement);
+    alert("Payment is being processed!");
   },
   onError: (err) => {
-    Alert("Error! " + err);
+    alert("An error occurred while processing payment! ");
+  },
+});
+
+const [processPayment, { loading: processPaymentLoading }] = useMutation(PROCESS_PAYMENT, {
+  update: (_, result) => {
+   
+    console.log(JSON.stringify(result.data.processPayment.message));
+  },
+  onError: (err) => {
+    alert("Error! " + err);
   },
 });
 
@@ -125,7 +143,28 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
     }
      
     }else{
-      Alert('Payment date & amount are required!')
+      alert('Payment date & amount are required!')
+    }
+  };
+
+  const handleProcessPayement = async () => {
+ 
+      if(name && amount && accountNumber && cardNumber && cardNumber && cvc && expiryMonth && expiryYear){
+      processPayment({
+        variables: {
+          accountNumber: user.accountNumber,
+          name: name, 
+          amount: Number(amount),
+          accountNumber: accountNumber,
+          cardNumber: cardNumber,
+          cvc: parseInt(cvc),
+          expiryMonth: expiryMonth,
+          expiryYear: parseInt(expiryYear)
+
+        },
+      });
+    }else{
+      alert('Please fill in required fields')
     }
   };
   const data = [
@@ -183,6 +222,8 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
                 className: "before:content-none after:content-none",
               }}
               style={{width: 90}}
+              onChange={(e) => setAmount(e.target.value)}
+              
             />
             </div>
             <Typography
@@ -230,6 +271,19 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
               size="lg"
               placeholder="J Mills"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              onChange={(e) => setName(e.target.value)}
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+            />
+             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
+              Account Number
+            </Typography>
+            <Input
+              size="lg"
+              placeholder="1245869"
+              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              onChange={(e) => setAccountNumber(e.target.value)}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -241,6 +295,7 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
               size="lg"
               placeholder="124562222055"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              onChange={(e) => setCardNumber(e.target.value)}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -249,24 +304,21 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
               Expiry Date
             </Typography>
             <div style={{ display: 'flex', alignContent: 'flex-start' }}>
-            <Input variant="static" label="Year" placeholder="2025" style={{width: 100}} />
-            <Input variant="static" label="Month" placeholder="12" style={{width: 100}} />
+            <Input variant="static" label="Year" placeholder="2025" style={{width: 100}} onChange={(e) => setExpiryYear(e.target.value)} />
+            <Input variant="static" label="Month" placeholder="12" style={{width: 100}} onChange={(e) => setExpiryMonth(e.target.value)}/>
   
               </div>
               <Input
                   placeholder="CVC"
                   className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
                   style={{width: 100}}
+                  onChange={(e) => setCvc(e.target.value)}
+                
                 />
-
-
-                      
-
-                        </div>
-                        </TabPanel>
-                      
-                    </TabsBody>
-                  </Tabs>
+              </div>
+              </TabPanel>       
+            </TabsBody>
+          </Tabs>
           </CardBody>
         </Card>
         <DialogFooter>
@@ -278,7 +330,7 @@ const [createPaymentArrangement, { loading: createPaymentArrangementLoading }] =
           >
             <span>Cancel</span>
           </Button>
-          <Button variant="gradient" color="green" onClick={handleOpen}>
+          <Button variant="gradient" color="green" onClick={handleProcessPayement}>
             <span>Confirm</span>
           </Button>
         </DialogFooter>

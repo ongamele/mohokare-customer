@@ -91,3 +91,9 @@ export const CREATE_PAYMENT_ARRANGEMENT = gql`
     createPaymentArrangement(accountNumber: $accountNumber, paymentDate: $paymentDate, amount: $amount)
   }
 `;
+
+export const PROCESS_PAYMENT = gql`
+  mutation processPayment($amount: Float!, $name: String!, $expiryMonth: String!, $expiryYear: Int!, $cvc: Int!, $accountNumber: String!, $cardNumber: String!) {
+    processPayment(amount: $amount, name: $name, expiryMonth: $expiryMonth,  expiryYear: $expiryYear, cvc: $cvc, accountNumber: $accountNumber, cardNumber: $cardNumber)
+  }
+`;
